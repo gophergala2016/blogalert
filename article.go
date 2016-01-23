@@ -7,4 +7,6 @@ type Article struct {
 	URL   string
 	Title string
 	MD5   string
+
+	Flag Flag
 }
