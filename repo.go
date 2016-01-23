@@ -15,4 +15,15 @@ type Repository interface {
 	GetAllArticles() ([]*Article, error)
 	// Insert new article
 	InsertArticle(*Article) error
+
+	// Get blogs a user is subscribed to
+	GetUserSubscriptions(UID string) ([]*Blog, error)
+	// Adds subscription to blog
+	AddUserSubscription(UID string, blog *Blog) error
+	// Deleres subscription to blog
+	DeleteUserSubscription(UID string, blog *Blog) error
+	// Get articles a user has read
+	GetUserArticlesRead(UID string, blog *Blog) ([]*Article, error)
+	// Set an article as read
+	SetUserArticleAsRead(UID string, article *Article) error
 }
