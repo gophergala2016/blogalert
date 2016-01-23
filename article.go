@@ -1,10 +1,12 @@
 package blogalert
 
+import "net/url"
+
 // Article defines article structure
 type Article struct {
 	Blog *Blog
 
-	URL   string
+	URL   *url.URL
 	Title string
 	MD5   string
 

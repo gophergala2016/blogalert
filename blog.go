@@ -3,19 +3,25 @@ package blogalert
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 // Blog defines blog structure
 type Blog struct {
-	URL   string
+	URL   *url.URL
 	Title string
 }
 
 // LoadBlog creates a blog by parsing the page title of its URL
-func LoadBlog(URL string) (*Blog, error) {
-	res, err := http.Get(URL)
+func LoadBlog(address string) (*Blog, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := http.Get(u.String())
 	defer res.Body.Close()
 	if err != nil {
 		return nil, err
@@ -29,26 +35,36 @@ func LoadBlog(URL string) (*Blog, error) {
 	title := doc.Find("title").First().Text()
 
 	if title == "" {
-		return nil, fmt.Errorf("Invalid blog %s - no title", URL)
+		return nil, fmt.Errorf("Invalid blog %s - no title", u)
 	}
 
-	return NewBlog(URL, title), nil
+	return NewBlog(u.String(), title)
 }
 
 // NewBlog creates a new blog
-func NewBlog(url, title string) *Blog {
-	return &Blog{
-		URL:   url,
-		Title: title,
+func NewBlog(address, title string) (*Blog, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Blog{
+		URL:   u,
+		Title: title,
+	}, nil
 }
 
 // NewArticle creates a new article in a blog
-func (b *Blog) NewArticle(url, title, hash string) *Article {
+func (b *Blog) NewArticle(address, title, hash string) (*Article, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Article{
 		Blog:  b,
-		URL:   url,
+		URL:   u,
 		Title: title,
 		MD5:   hash,
-	}
+	}, nil
 }

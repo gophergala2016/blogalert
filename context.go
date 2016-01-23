@@ -9,15 +9,12 @@ type context struct {
 	lock sync.Mutex
 	dup  map[string]struct{}
 	blog *Blog
-	url  *url.URL
 }
 
 func newContext(blog *Blog) *context {
-	u, _ := url.Parse(blog.URL)
 	return &context{
 		blog: blog,
 		dup:  make(map[string]struct{}),
-		url:  u,
 	}
 }
 
@@ -39,5 +36,5 @@ func (ctx *context) Blog() *Blog {
 }
 
 func (ctx *context) URL() *url.URL {
-	return ctx.url
+	return ctx.blog.URL
 }
