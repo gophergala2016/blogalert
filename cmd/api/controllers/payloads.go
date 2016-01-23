@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import "github.com/gophergala2016/blogalert"
 
@@ -19,11 +19,18 @@ type UpdatePayload struct {
 }
 
 type ErrorPayload struct {
-	Error string
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+type ConfimTitlePayload struct {
+	Success bool   `json:"success"`
+	Title   string `json:"title"`
+	URL     string `json:"url"`
 }
 
 type SuccessPayload struct {
-	Success bool
+	Success bool `json:"success"`
 }
 
 func newArticlePayload(articles []*blogalert.Article) []*ArticlePayload {

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gophergala2016/blogalert/cmd/api/controllers"
 	"github.com/gophergala2016/blogalert/repositories/rethink"
 )
 
@@ -22,12 +23,16 @@ func main() {
 
 	logrus.Info("Connected to repository")
 
-	tokenValidator := NewTokenValidator(config)
-	updateController := NewUpdateController(repo, tokenValidator)
-	readController := NewReadController(repo, tokenValidator)
+	tokenValidator := controllers.NewTokenValidator(config.Token.ClientID)
+	updateController := controllers.NewUpdateController(repo, tokenValidator)
+	readController := controllers.NewReadController(repo, tokenValidator)
+	subscribeController := controllers.NewSubscribeController(repo, tokenValidator)
+	unsubscribeController := controllers.NewUnsubscribeController(repo, tokenValidator)
 
 	http.Handle("/updates", updateController)
 	http.Handle("/read", readController)
+	http.Handle("/subscribe", subscribeController)
+	http.Handle("/unsubscribe", unsubscribeController)
 
 	logrus.Info("Starting server")
 	http.ListenAndServe(config.Server.Listen, nil)

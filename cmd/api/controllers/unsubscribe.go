@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"encoding/json"
@@ -7,19 +7,19 @@ import (
 	"github.com/gophergala2016/blogalert"
 )
 
-type ReadController struct {
+type UnsubscribeController struct {
 	repo           blogalert.Repository
 	tokenValidator *TokenValidator
 }
 
-func NewReadController(repo blogalert.Repository, tokenValidator *TokenValidator) *ReadController {
-	return &ReadController{
+func NewUnsubscribeController(repo blogalert.Repository, tokenValidator *TokenValidator) *UnsubscribeController {
+	return &UnsubscribeController{
 		repo:           repo,
 		tokenValidator: tokenValidator,
 	}
 }
 
-func (rc *ReadController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (usc *UnsubscribeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var payload interface{}
 
 	defer func() {
@@ -31,7 +31,7 @@ func (rc *ReadController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
 	url := r.FormValue("url")
 
-	valid, uid, err := rc.tokenValidator.ValidateToken(token)
+	valid, uid, err := usc.tokenValidator.ValidateToken(token)
 
 	if err != nil {
 		payload = ErrorPayload{
@@ -49,7 +49,8 @@ func (rc *ReadController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	article, err := rc.repo.GetArticle(url)
+	blog, err := usc.repo.GetBlog(url)
+
 	if err != nil {
 		payload = ErrorPayload{
 			Error: err.Error(),
@@ -58,13 +59,15 @@ func (rc *ReadController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = rc.repo.SetUserArticleAsRead(uid, article)
-	if err != nil {
-		payload = ErrorPayload{
-			Error: err.Error(),
+	if blog != nil {
+		err := usc.repo.DeleteUserSubscription(uid, blog)
+		if err != nil {
+			payload = ErrorPayload{
+				Error: err.Error(),
+			}
+			w.WriteHeader(500)
+			return
 		}
-		w.WriteHeader(500)
-		return
 	}
 
 	payload = SuccessPayload{Success: true}

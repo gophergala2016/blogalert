@@ -51,6 +51,11 @@ func (r *repo) GetBlog(URL string) (*blogalert.Blog, error) {
 	b := &blog{}
 
 	err = cursor.One(b)
+
+	if err == gorethink.ErrEmptyResult {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +103,11 @@ func (r *repo) GetArticle(URL string) (*blogalert.Article, error) {
 	a := &article{}
 
 	err = cursor.One(a)
+
+	if err == gorethink.ErrEmptyResult {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +117,32 @@ func (r *repo) GetArticle(URL string) (*blogalert.Article, error) {
 
 func (r *repo) GetAllArticles() ([]*blogalert.Article, error) {
 	cursor, err := gorethink.DB(Database).Table(ArticleTable).Run(r.session)
+	if err != nil {
+		return nil, err
+	}
+
+	a := []*article{}
+
+	err = cursor.All(&a)
+	if err != nil {
+		return nil, err
+	}
+
+	articles := make([]*blogalert.Article, 0, len(a))
+
+	for _, v := range a {
+		if article, err := v.ToArticle(r); err == nil {
+			articles = append(articles, article)
+		}
+	}
+
+	return articles, nil
+}
+
+func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article, error) {
+	cursor, err := gorethink.DB(Database).Table(ArticleTable).
+		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).Run(r.session)
+
 	if err != nil {
 		return nil, err
 	}

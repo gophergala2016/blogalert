@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"encoding/json"
@@ -28,9 +28,9 @@ type TokenValidator struct {
 }
 
 // NewTokenValidator creates a new token validator
-func NewTokenValidator(config *Config) *TokenValidator {
+func NewTokenValidator(clientID string) *TokenValidator {
 	return &TokenValidator{
-		clientID: config.Token.ClientID,
+		clientID: clientID,
 	}
 }
 

@@ -2,17 +2,19 @@ package blogalert
 
 // Repository defines the blog repository
 type Repository interface {
-	// Get blog by URL
+	// Get blog by URL, no result returns nil, nil
 	GetBlog(URL string) (*Blog, error)
 	// Get all blogs
 	GetAllBlogs() ([]*Blog, error)
 	// Insert new blog
 	InsertBlog(*Blog) error
 
-	// Get Article by URL
+	// Get Article by URL, no result returns nil, nil
 	GetArticle(URL string) (*Article, error)
 	// Get all articles
 	GetAllArticles() ([]*Article, error)
+	// Get all articles in blog
+	GetAllArticlesInBlog(*Blog) ([]*Article, error)
 	// Insert new article
 	InsertArticle(*Article) error
 
