@@ -25,13 +25,17 @@ func NewRepo(config *Config) (blogalert.Repository, error) {
 		return nil, err
 	}
 
-	return &repo{
-		session: sess,
-	}, nil
+	return NewRepoFromSession(sess), nil
 }
 
 // NewRepoFromSession creates new repo
 func NewRepoFromSession(sess *gorethink.Session) blogalert.Repository {
+	gorethink.DBCreate(Database).RunWrite(sess)
+	gorethink.DB(Database).TableCreate(ArticleTable).RunWrite(sess)
+	gorethink.DB(Database).TableCreate(BlogTable).RunWrite(sess)
+	gorethink.DB(Database).TableCreate(SubscriptionTable).RunWrite(sess)
+	gorethink.DB(Database).TableCreate(ArticleReadTable).RunWrite(sess)
+
 	return &repo{
 		session: sess,
 	}
@@ -62,7 +66,7 @@ func (r *repo) GetAllBlogs() ([]*blogalert.Blog, error) {
 
 	b := []*blog{}
 
-	err = cursor.All(b)
+	err = cursor.All(&b)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +113,7 @@ func (r *repo) GetAllArticles() ([]*blogalert.Article, error) {
 
 	a := []*article{}
 
-	err = cursor.All(a)
+	err = cursor.All(&a)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +144,7 @@ func (r *repo) GetUserSubscriptions(UID string) ([]*blogalert.Blog, error) {
 
 	s := []*subscription{}
 
-	err = cursor.All(s)
+	err = cursor.All(&s)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +185,7 @@ func (r *repo) GetUserArticlesRead(UID string, blog *blogalert.Blog) ([]*blogale
 
 	a := []*articleRead{}
 
-	err = cursor.All(a)
+	err = cursor.All(&a)
 	if err != nil {
 		return nil, err
 	}

@@ -68,7 +68,7 @@ func (e *Extractor) proccess(ctx *context, u *url.URL, body string, hash string,
 
 		article, err := ctx.Blog().NewArticle(u.String(), title, hash)
 
-		if err == nil {
+		if err != nil {
 			e.log.WithError(err).Errorf("Error creating article %s", u)
 			return
 		}
@@ -81,7 +81,7 @@ func (e *Extractor) store(a *Article) Worker {
 	return Worker(func(wp *WorkerPool) {
 		e.log.Infof("Storing %s [%s]", a.Title, a.URL)
 		err := e.repo.InsertArticle(a)
-		if err == nil {
+		if err != nil {
 			e.log.WithError(err).Errorf("Error storing article %s", a.URL)
 			return
 		}
