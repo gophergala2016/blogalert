@@ -104,7 +104,7 @@ func (e *Extractor) crawl(ctx *context, u *url.URL) Worker {
 		}
 
 		a, _ := e.repo.GetArticle(u.String())
-		if a != nil && a.MD5 == hash {
+		if a != nil && (a.MD5 == hash || a.Flag == Ignore) {
 			return
 		}
 
