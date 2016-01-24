@@ -13,6 +13,7 @@ type Config struct {
 	} `yaml:"token"`
 
 	Server struct {
+		API    string `yaml:"api"`
 		Listen string `yaml:"listen"`
 	} `yaml:"server"`
 }
