@@ -242,6 +242,7 @@ func (r *repo) GetUserArticlesRead(UID string, blog *blogalert.Blog) ([]*blogale
 		OrderBy(gorethink.Desc("ts")).
 		Filter(gorethink.Row.Field("uid").Eq(UID)).
 		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).
+		Limit(100).
 		Run(r.session)
 	if err != nil {
 		return nil, err
