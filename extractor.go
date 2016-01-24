@@ -44,9 +44,16 @@ func (e *Extractor) links(u *url.URL, doc *goquery.Document) ([]*url.URL, error)
 	doc.Find("a[href]").Each(func(i int, sel *goquery.Selection) {
 		val, _ := sel.Attr("href")
 		u, err := u.Parse(val)
+
 		if err != nil {
 			e.log.WithError(err).Errorf("Error resolving URL %s", val)
 			return
+		}
+
+		u.Fragment = ""
+
+		if u.Path != "" && u.Path[len(u.Path)-1:] == "/" {
+			u.Path = u.Path[:len(u.Path)-1]
 		}
 
 		urls = append(urls, u)
@@ -59,7 +66,7 @@ func (e *Extractor) proccess(ctx *context, u *url.URL, body string, hash string,
 	return Worker(func(wp *WorkerPool) {
 		e.log.Infof("Proccessing %s", u)
 
-		title := doc.Find("title").First().Text()
+		title := doc.Find("head>title").First().Text()
 
 		if title == "" {
 			e.log.Infof("Page %s does not have title - ignored", u)

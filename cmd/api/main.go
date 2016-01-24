@@ -26,11 +26,13 @@ func main() {
 	tokenValidator := controllers.NewTokenValidator(config.Token.ClientID)
 	updateController := controllers.NewUpdateController(repo, tokenValidator)
 	readController := controllers.NewReadController(repo, tokenValidator)
+	readAllController := controllers.NewReadAllController(repo, tokenValidator)
 	subscribeController := controllers.NewSubscribeController(repo, tokenValidator)
 	unsubscribeController := controllers.NewUnsubscribeController(repo, tokenValidator)
 
 	http.Handle("/updates", updateController)
 	http.Handle("/read", readController)
+	http.Handle("/readall", readAllController)
 	http.Handle("/subscribe", subscribeController)
 	http.Handle("/unsubscribe", unsubscribeController)
 

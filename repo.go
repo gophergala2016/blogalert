@@ -11,8 +11,6 @@ type Repository interface {
 
 	// Get Article by URL, no result returns nil, nil
 	GetArticle(URL string) (*Article, error)
-	// Get all articles
-	GetAllArticles() ([]*Article, error)
 	// Get all articles in blog
 	GetAllArticlesInBlog(*Blog) ([]*Article, error)
 	// Insert new article
@@ -28,4 +26,6 @@ type Repository interface {
 	GetUserArticlesRead(UID string, blog *Blog) ([]*Article, error)
 	// Set an article as read
 	SetUserArticleAsRead(UID string, article *Article) error
+	// Set an blog as read
+	SetUserBlogAsRead(UID string, blog *Blog) error
 }

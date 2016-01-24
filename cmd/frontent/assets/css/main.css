@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box
+}
+
+.user--valid {
+    display: none;
+}
+
+.mCustomScrollBox{
+    height: auto !important;
+}
+
+h1, h2, h3, h4 {
+  padding: 1em;
+  margin: 0;
+}
+
+a {
+  color: #444;
+  text-decoration: none;
+  display: inline-block;
+  padding-top: 0.2em;
+  font-size: 0.9em;
+}
+
+html, body {
+  padding:0;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.header {
+  background: #388E8E;
+  text-align: center;
+  padding-bottom: 35px;
+  margin-bottom: 60px;
+}
+
+.header__title{
+  display:inline-block;
+  color: #fff;
+}
+
+.header__title__logo{
+  display: block;
+}
+
+.header__float{
+  position: absolute;
+  width: 100%;
+}
+
+.header__float__login {
+  margin: 0 auto;
+  width: 160px;
+  border: 20px solid #388E8E;
+  border-radius: 20px;
+}
+
+.header__float__subscribe{
+  margin: 0 auto;
+  width: 30%;
+  min-width: 400px;
+  border: 20px solid #388E8E;
+  border-radius: 20px;
+}
+
+.header__float__subscribe__form{
+  margin: 0;
+}
+
+.header__float__subscribe__form__input{
+  width: 100%;
+  height: 3em;
+  margin: 0;
+  padding: 1em;
+}
+
+.subscription__header, .subscription__info{
+  margin: 1em 0 1em 2%;
+}
+
+.subscription__header, .subscription__info__header{
+  border-radius: 20px 0 0 20px;
+  background: #388E8E;
+  color: #fff;
+}
+
+.subscription__header a, .subscription__info__header a{
+  color: #eee;
+}
+
+.subscription__info {
+  margin: 1em 0 1em 3%;
+}
+
+.subscription__info__body {
+  margin: 0 0 0 1em;
+  max-height: 320px;
+}
+
+.subscription__info__article {
+  padding: 0.5em;
+  border-bottom: 1px solid #aaa
+}
+
+.subscription__info__article a {
+  display: none;
+}
+
+.subscription__info__article:hover,
+.subscription__info__article:focus {
+  background: #ddd;
+}
+
+.subscription__info__article:hover a,
+.subscription__info__article:focus a {
+  display: inline;
+}
+
+.counter{
+  float: left;
+  color: #000;
+  margin: -0.25em 1em 0 0;
+}
+
+.counter .fa-stack-text {
+  font-size: 0.8em
+}
+
+.subscription__confirm{
+    background: rgba(0,0,0,0.8);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.subscription__confirm__wrapper{
+    max-width: 500px;
+    margin: 20% auto;
+    background: #fff;
+}
+
+.subscription__confirm__header{
+    background: #388E8E;
+    color: #fff;
+}
+
+.subscription__confirm__body__form{
+    padding: 2em;
+    text-align: center;
+}
+
+.subscription__confirm__body__form input {
+    width: 90%;
+    margin: 0.5em;
+    padding: 0.5em;
+}
+
+button {
+  display: inline-block;
+  margin: 0.5em;
+  padding: 0.5em 1em;
+  line-height: 1.8;
+  appearance: none;
+  box-shadow: none;
+  border-radius: 0;
+  border: 0;
+  background: #388E8E;
+  color: #fff;
+}

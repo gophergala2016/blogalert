@@ -1,6 +1,7 @@
 package rethink
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/gophergala2016/blogalert"
@@ -19,6 +20,7 @@ type article struct {
 }
 
 type subscription struct {
+	ID      string `gorethink:"id"`
 	UID     string `gorethink:"uid"`
 	BlogURL string `gorethink:"blog"`
 }
@@ -47,6 +49,7 @@ func newArticle(b *blogalert.Article) *article {
 
 func newSubscription(uid string, b *blogalert.Blog) *subscription {
 	return &subscription{
+		ID:      fmt.Sprintf("%s_%s", uid, b.URL.String()),
 		UID:     uid,
 		BlogURL: b.URL.String(),
 	}
@@ -60,7 +63,7 @@ func newArticleRead(uid string, a *blogalert.Article) *articleRead {
 	}
 }
 
-func (b *blog) ToBlog(repo *repo) (*blogalert.Blog, error) {
+func (b *blog) ToBlog() (*blogalert.Blog, error) {
 	u, err := url.Parse(b.URL)
 	if err != nil {
 		return nil, err
@@ -72,13 +75,8 @@ func (b *blog) ToBlog(repo *repo) (*blogalert.Blog, error) {
 	}, nil
 }
 
-func (a *article) ToArticle(repo *repo) (*blogalert.Article, error) {
+func (a *article) ToArticle(blog *blogalert.Blog) (*blogalert.Article, error) {
 	u, err := url.Parse(a.URL)
-	if err != nil {
-		return nil, err
-	}
-
-	blog, err := repo.GetBlog(a.BlogURL)
 	if err != nil {
 		return nil, err
 	}

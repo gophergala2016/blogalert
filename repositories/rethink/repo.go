@@ -16,6 +16,7 @@ const (
 
 type repo struct {
 	session *gorethink.Session
+	cache   *cache
 }
 
 // NewRepo creates new repo
@@ -35,13 +36,23 @@ func NewRepoFromSession(sess *gorethink.Session) blogalert.Repository {
 	gorethink.DB(Database).TableCreate(BlogTable).RunWrite(sess)
 	gorethink.DB(Database).TableCreate(SubscriptionTable).RunWrite(sess)
 	gorethink.DB(Database).TableCreate(ArticleReadTable).RunWrite(sess)
+	gorethink.DB(Database).Table(ArticleTable).IndexCreate("blog")
+	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("uid")
+	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("blog")
+	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("uid")
+	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("blog")
 
 	return &repo{
 		session: sess,
+		cache:   newCache(),
 	}
 }
 
 func (r *repo) GetBlog(URL string) (*blogalert.Blog, error) {
+	if b := r.cache.GetBlog(URL); b != nil {
+		return b, nil
+	}
+
 	cursor, err := gorethink.DB(Database).Table(BlogTable).
 		Get(URL).Run(r.session)
 	if err != nil {
@@ -60,7 +71,13 @@ func (r *repo) GetBlog(URL string) (*blogalert.Blog, error) {
 		return nil, err
 	}
 
-	return b.ToBlog(r)
+	blog, err := b.ToBlog()
+
+	if err != nil {
+		r.cache.SetBlog(blog)
+	}
+
+	return blog, err
 }
 
 func (r *repo) GetAllBlogs() ([]*blogalert.Blog, error) {
@@ -79,8 +96,9 @@ func (r *repo) GetAllBlogs() ([]*blogalert.Blog, error) {
 	blogs := make([]*blogalert.Blog, 0, len(b))
 
 	for _, v := range b {
-		if blog, err := v.ToBlog(r); err == nil {
+		if blog, err := v.ToBlog(); err == nil {
 			blogs = append(blogs, blog)
+			r.cache.SetBlog(blog)
 		}
 	}
 
@@ -90,10 +108,16 @@ func (r *repo) GetAllBlogs() ([]*blogalert.Blog, error) {
 func (r *repo) InsertBlog(b *blogalert.Blog) error {
 	_, err := gorethink.DB(Database).Table(BlogTable).
 		Insert(newBlog(b)).RunWrite(r.session)
+
+	r.cache.SetBlog(b)
 	return err
 }
 
 func (r *repo) GetArticle(URL string) (*blogalert.Article, error) {
+	if a := r.cache.GetArticle(URL); a != nil {
+		return a, nil
+	}
+
 	cursor, err := gorethink.DB(Database).Table(ArticleTable).
 		Get(URL).Run(r.session)
 	if err != nil {
@@ -112,34 +136,26 @@ func (r *repo) GetArticle(URL string) (*blogalert.Article, error) {
 		return nil, err
 	}
 
-	return a.ToArticle(r)
-}
+	blog, err := r.GetBlog(a.BlogURL)
 
-func (r *repo) GetAllArticles() ([]*blogalert.Article, error) {
-	cursor, err := gorethink.DB(Database).Table(ArticleTable).Run(r.session)
 	if err != nil {
 		return nil, err
 	}
 
-	a := []*article{}
+	article, err := a.ToArticle(blog)
 
-	err = cursor.All(&a)
 	if err != nil {
-		return nil, err
+		r.cache.SetArticle(article)
 	}
 
-	articles := make([]*blogalert.Article, 0, len(a))
-
-	for _, v := range a {
-		if article, err := v.ToArticle(r); err == nil {
-			articles = append(articles, article)
-		}
-	}
-
-	return articles, nil
+	return article, err
 }
 
 func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article, error) {
+	if blog == nil {
+		return nil, nil
+	}
+
 	cursor, err := gorethink.DB(Database).Table(ArticleTable).
 		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).Run(r.session)
 
@@ -157,8 +173,9 @@ func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article,
 	articles := make([]*blogalert.Article, 0, len(a))
 
 	for _, v := range a {
-		if article, err := v.ToArticle(r); err == nil {
+		if article, err := v.ToArticle(blog); err == nil {
 			articles = append(articles, article)
+			r.cache.SetArticle(article)
 		}
 	}
 
@@ -168,6 +185,7 @@ func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article,
 func (r *repo) InsertArticle(a *blogalert.Article) error {
 	_, err := gorethink.DB(Database).Table(ArticleTable).
 		Insert(newArticle(a)).RunWrite(r.session)
+	r.cache.SetArticle(a)
 	return err
 }
 
@@ -188,7 +206,7 @@ func (r *repo) GetUserSubscriptions(UID string) ([]*blogalert.Blog, error) {
 	blogs := make([]*blogalert.Blog, 0, len(s))
 
 	for _, v := range s {
-		if blog, err := r.GetBlog(v.BlogURL); err == nil {
+		if blog, err := r.GetBlog(v.BlogURL); err == nil && blog != nil {
 			blogs = append(blogs, blog)
 		}
 	}
@@ -211,6 +229,10 @@ func (r *repo) DeleteUserSubscription(UID string, blog *blogalert.Blog) error {
 }
 
 func (r *repo) GetUserArticlesRead(UID string, blog *blogalert.Blog) ([]*blogalert.Article, error) {
+	if blog == nil {
+		return nil, nil
+	}
+
 	cursor, err := gorethink.DB(Database).Table(ArticleReadTable).
 		Filter(gorethink.Row.Field("uid").Eq(UID)).
 		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).
@@ -241,4 +263,20 @@ func (r *repo) SetUserArticleAsRead(UID string, article *blogalert.Article) erro
 	_, err := gorethink.DB(Database).Table(ArticleReadTable).
 		Insert(newArticleRead(UID, article)).RunWrite(r.session)
 	return err
+}
+
+func (r *repo) SetUserBlogAsRead(UID string, blog *blogalert.Blog) error {
+	articles, err := r.GetAllArticlesInBlog(blog)
+	if err != nil {
+		return err
+	}
+	rows := make([]*articleRead, 0, len(articles))
+	for _, article := range articles {
+		rows = append(rows, newArticleRead(UID, article))
+	}
+
+	_, err = gorethink.DB(Database).Table(ArticleReadTable).
+		Insert(rows).RunWrite(r.session)
+	return err
+
 }

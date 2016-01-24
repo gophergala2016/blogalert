@@ -21,11 +21,15 @@ func LoadBlog(address string) (*Blog, error) {
 		return nil, err
 	}
 
+	if u.Scheme == "" {
+		u.Scheme = "http"
+	}
+
 	res, err := http.Get(u.String())
-	defer res.Body.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromResponse(res)
 	if err != nil {
@@ -48,6 +52,12 @@ func NewBlog(address, title string) (*Blog, error) {
 		return nil, err
 	}
 
+	if u.Path != "" && u.Path[len(u.Path)-1:] == "/" {
+		u.Path = u.Path[:len(u.Path)-1]
+	}
+
+	u.Scheme = "http"
+
 	return &Blog{
 		URL:   u,
 		Title: title,
@@ -59,6 +69,10 @@ func (b *Blog) NewArticle(address, title, hash string) (*Article, error) {
 	u, err := url.Parse(address)
 	if err != nil {
 		return nil, err
+	}
+
+	if u.Path != "" && u.Path[len(u.Path)-1:] == "/" {
+		u.Path = u.Path[:len(u.Path)-1]
 	}
 
 	return &Article{

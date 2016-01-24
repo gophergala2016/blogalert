@@ -22,8 +22,10 @@ func NewReadController(repo blogalert.Repository, tokenValidator *TokenValidator
 func (rc *ReadController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var payload interface{}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	defer func() {
-		w.Header().Set("Content-Type", "application/json")
 		e := json.NewEncoder(w)
 		e.Encode(payload)
 	}()

@@ -1,0 +1,93 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/malihu/malihu-custom-scrollbar-plugin/master/jquery.mCustomScrollbar.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+
+    <script>var API = "http://localhost:8080"</script>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+    <script src="https://cdn.rawgit.com/malihu/malihu-custom-scrollbar-plugin/master/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
+    <meta name="google-signin-client_id" content="{{.Config.Token.ClientID}}">
+</head>
+<body>
+    <script id="template__subscription" type="text/template">
+        <div class="subscription">
+            <header class="subscription__header">
+                <h2 class="subscription__header__title">
+                    Subscriptions
+                    <span class="fa-stack fa-1x counter">
+                        <i class="fa fa-bell fa-stack-2x fa-inverse"></i>
+                        <strong class="fa-stack-1x fa-stack-text">[[count]]</strong>
+                    </span>
+                </h2>
+            </header>
+            [[#each subscriptions]]
+                <div class="subscription__info">
+                    <h3 class="subscription__info__header">
+                        [[title]] <a href="#" data-blog="[[url]]" class="markallasread">[mark all as read]</a>
+                        <span class="fa-stack fa-1x counter">
+                            <i class="fa fa-bell fa-stack-2x fa-inverse"></i>
+                            <strong class="fa-stack-1x fa-stack-text">[[count]]</strong>
+                        </span>
+                    </h3>
+                    <div class="subscription__info__body">
+                        [[#each updates]]
+                        <div class="subscription__info__article">
+                            [[title]]
+                             <a href="[[url]]" data-article="[[url]]" class="lb markasread">[read]</a>
+                             <a href="#" data-article="[[url]]" class="markasread">[mark as read]</a>
+                        </div>
+                        [[else]]
+                            <div class="subscription__info__article">
+                                No new articles!
+                            </div>
+                        [[/each]]
+                    </div>
+                </div>
+            [[else]]
+                <div class="subscription__info">
+                    No subscriptons!
+                </div>
+            [[/each]]
+        </div>
+    </script>
+    <header class="header">
+        <h1 class="header__title">
+            <i class="fa fa-bell fa-5x fa-inverse header__title__logo"></i>
+            BlogAlert
+        </h1>
+        <div class="header__float">
+            <div class="header__float__login user--anonymous">
+                <div class="g-signin2"></div>
+            </div>
+            <div class="header__float__subscribe user--valid">
+                <form class="header__float__subscribe__form">
+                    <input type="text" class="header__float__subscribe__form__input" placeholder="Enter the blog URL here" />
+                </form>
+            </div>
+        </div>
+    </header>
+    <div id="subscriptions" class="user--valid"></div>
+    <div class="subscription__confirm">
+        <div class="subscription__confirm__wrapper">
+            <header class="subscription__confirm__header">
+                <h2>Confirm</h2>
+            </header>
+            <div class="subscription__confirm__body">
+                <form class="subscription__confirm__body__form">
+                    <label for="subscription__confirm__url">URL</label>
+      	             <input id="subscription__confirm__url" type="text">
+                     <label for="subscription__confirm__title">Title</label>
+                     <input id="subscription__confirm__title" type="text">
+                     <button>Confirm</button>
+                 </form>
+             </div>
+         </div>
+     </div>
+</body>
+</html>
