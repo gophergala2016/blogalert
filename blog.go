@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -76,9 +77,10 @@ func (b *Blog) NewArticle(address, title, hash string) (*Article, error) {
 	}
 
 	return &Article{
-		Blog:  b,
-		URL:   u,
-		Title: title,
-		MD5:   hash,
+		Blog:      b,
+		URL:       u,
+		Title:     title,
+		MD5:       hash,
+		Timestamp: time.Now(),
 	}, nil
 }

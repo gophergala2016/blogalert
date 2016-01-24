@@ -11,7 +11,7 @@ type Repository interface {
 
 	// Get Article by URL, no result returns nil, nil
 	GetArticle(URL string) (*Article, error)
-	// Get all articles in blog
+	// Get the last 100 articles in blog
 	GetAllArticlesInBlog(*Blog) ([]*Article, error)
 	// Insert new article
 	InsertArticle(*Article) error
@@ -22,7 +22,7 @@ type Repository interface {
 	AddUserSubscription(UID string, blog *Blog) error
 	// Deleres subscription to blog
 	DeleteUserSubscription(UID string, blog *Blog) error
-	// Get articles a user has read
+	// Get the last 100 articles a user has read
 	GetUserArticlesRead(UID string, blog *Blog) ([]*Article, error)
 	// Set an article as read
 	SetUserArticleAsRead(UID string, article *Article) error

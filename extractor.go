@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
@@ -81,23 +80,17 @@ func (e *Extractor) proccess(ctx *context, u *url.URL, body string, hash string,
 			return
 		}
 
-		wp.Do(e.store(article))
-	})
-}
-
-func (e *Extractor) store(a *Article) Worker {
-	return Worker(func(wp *WorkerPool) {
-		e.log.Infof("Storing %s [%s]", a.Title, a.URL)
-		err := e.repo.InsertArticle(a)
+		e.log.Infof("Storing %s [%s]", article.Title, article.URL)
+		err = e.repo.InsertArticle(article)
 		if err != nil {
-			e.log.WithError(err).Errorf("Error storing article %s", a.URL)
+			e.log.WithError(err).Errorf("Error storing article %s", article.URL)
 			return
 		}
 	})
 }
 
-func (e *Extractor) crawl(ctx *context, u *url.URL) Worker {
-	if !ctx.Queue(u) || time.Since(ctx.Start) > 2*time.Minute {
+func (e *Extractor) crawl(ctx *context, u *url.URL, depth int) Worker {
+	if !ctx.Queue(u) || depth > 5 {
 		return nil
 	}
 
@@ -136,7 +129,7 @@ func (e *Extractor) crawl(ctx *context, u *url.URL) Worker {
 
 		for _, link := range links {
 			if link.Host == ctx.URL().Host {
-				wp.Do(e.crawl(ctx, link))
+				wp.Do(e.crawl(ctx, link, depth+1))
 			}
 		}
 	})
@@ -145,5 +138,5 @@ func (e *Extractor) crawl(ctx *context, u *url.URL) Worker {
 // Crawl crawls blog for articles
 func (e *Extractor) Crawl(blog *Blog) {
 	ctx := newContext(blog)
-	e.wp.Do(e.crawl(ctx, ctx.URL()))
+	e.wp.Do(e.crawl(ctx, ctx.URL(), 0))
 }

@@ -3,6 +3,7 @@ package rethink
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/gophergala2016/blogalert"
 )
@@ -13,10 +14,11 @@ type blog struct {
 }
 
 type article struct {
-	BlogURL string `gorethink:"blog"`
-	URL     string `gorethink:"id"`
-	Title   string `gorethink:"title"`
-	MD5     string `gorethink:"md5"`
+	BlogURL   string `gorethink:"blog"`
+	URL       string `gorethink:"id"`
+	Title     string `gorethink:"title"`
+	MD5       string `gorethink:"md5"`
+	Timestamp int64  `gorethink:"ts"`
 }
 
 type subscription struct {
@@ -29,6 +31,7 @@ type articleRead struct {
 	UID        string `gorethink:"uid"`
 	BlogURL    string `gorethink:"blog"`
 	ArticleURL string `gorethink:"article"`
+	Timestamp  int64  `gorethink:"ts"`
 }
 
 func newBlog(b *blogalert.Blog) *blog {
@@ -40,10 +43,11 @@ func newBlog(b *blogalert.Blog) *blog {
 
 func newArticle(b *blogalert.Article) *article {
 	return &article{
-		BlogURL: b.Blog.URL.String(),
-		URL:     b.URL.String(),
-		Title:   b.Title,
-		MD5:     b.MD5,
+		Timestamp: b.Timestamp.Unix(),
+		BlogURL:   b.Blog.URL.String(),
+		URL:       b.URL.String(),
+		Title:     b.Title,
+		MD5:       b.MD5,
 	}
 }
 
@@ -60,6 +64,7 @@ func newArticleRead(uid string, a *blogalert.Article) *articleRead {
 		UID:        uid,
 		ArticleURL: a.URL.String(),
 		BlogURL:    a.Blog.URL.String(),
+		Timestamp:  a.Timestamp.Unix(),
 	}
 }
 
@@ -82,9 +87,10 @@ func (a *article) ToArticle(blog *blogalert.Blog) (*blogalert.Article, error) {
 	}
 
 	return &blogalert.Article{
-		Blog:  blog,
-		URL:   u,
-		Title: a.Title,
-		MD5:   a.MD5,
+		Blog:      blog,
+		URL:       u,
+		Title:     a.Title,
+		MD5:       a.MD5,
+		Timestamp: time.Unix(a.Timestamp, 0),
 	}, nil
 }

@@ -37,6 +37,7 @@ func NewRepoFromSession(sess *gorethink.Session) blogalert.Repository {
 	gorethink.DB(Database).TableCreate(SubscriptionTable).RunWrite(sess)
 	gorethink.DB(Database).TableCreate(ArticleReadTable).RunWrite(sess)
 	gorethink.DB(Database).Table(ArticleTable).IndexCreate("blog")
+	gorethink.DB(Database).Table(ArticleTable).IndexCreate("ts")
 	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("uid")
 	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("blog")
 	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("uid")
@@ -157,7 +158,10 @@ func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article,
 	}
 
 	cursor, err := gorethink.DB(Database).Table(ArticleTable).
-		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).Run(r.session)
+		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).
+		OrderBy(gorethink.OrderByOpts{Index: gorethink.Desc("ts")}).
+		Limit(100).
+		Run(r.session)
 
 	if err != nil {
 		return nil, err
@@ -184,7 +188,7 @@ func (r *repo) GetAllArticlesInBlog(blog *blogalert.Blog) ([]*blogalert.Article,
 
 func (r *repo) InsertArticle(a *blogalert.Article) error {
 	_, err := gorethink.DB(Database).Table(ArticleTable).
-		Insert(newArticle(a)).RunWrite(r.session)
+		Insert(newArticle(a), gorethink.InsertOpts{Conflict: "replace"}).RunWrite(r.session)
 	r.cache.SetArticle(a)
 	return err
 }

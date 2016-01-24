@@ -3,21 +3,18 @@ package blogalert
 import (
 	"net/url"
 	"sync"
-	"time"
 )
 
 type context struct {
-	lock  sync.Mutex
-	Start time.Time
-	dup   map[string]struct{}
-	blog  *Blog
+	lock sync.Mutex
+	dup  map[string]struct{}
+	blog *Blog
 }
 
 func newContext(blog *Blog) *context {
 	return &context{
-		Start: time.Now(),
-		blog:  blog,
-		dup:   make(map[string]struct{}),
+		blog: blog,
+		dup:  make(map[string]struct{}),
 	}
 }
 
