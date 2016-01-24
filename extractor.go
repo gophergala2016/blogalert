@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
@@ -96,7 +97,7 @@ func (e *Extractor) store(a *Article) Worker {
 }
 
 func (e *Extractor) crawl(ctx *context, u *url.URL) Worker {
-	if !ctx.Queue(u) {
+	if !ctx.Queue(u) || time.Since(ctx.Start) > 2*time.Minute {
 		return nil
 	}
 
