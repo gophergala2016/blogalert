@@ -44,7 +44,7 @@ func newBlog(b *blogalert.Blog) *blog {
 
 func newArticle(b *blogalert.Article) *article {
 	return &article{
-		Timestamp: b.Timestamp.Unix(),
+		Timestamp: b.Timestamp.UnixNano(),
 		BlogURL:   b.Blog.URL.String(),
 		URL:       b.URL.String(),
 		Title:     b.Title,
@@ -66,7 +66,7 @@ func newArticleRead(uid string, a *blogalert.Article) *articleRead {
 		UID:        uid,
 		ArticleURL: a.URL.String(),
 		BlogURL:    a.Blog.URL.String(),
-		Timestamp:  a.Timestamp.Unix(),
+		Timestamp:  a.Timestamp.UnixNano(),
 	}
 }
 
@@ -93,6 +93,6 @@ func (a *article) ToArticle(blog *blogalert.Blog) (*blogalert.Article, error) {
 		URL:       u,
 		Title:     a.Title,
 		MD5:       a.MD5,
-		Timestamp: time.Unix(a.Timestamp, 0),
+		Timestamp: time.Unix(0, a.Timestamp),
 	}, nil
 }
