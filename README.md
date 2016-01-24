@@ -10,6 +10,7 @@ It is devided into a crawler, an api and a frontend. All of these can be hosted 
 
 * Unsubscribe (in progess)
 * URL autocomplete
+* Blacklist so people cant crawl sites like twitter (there is already a time limit on crawling a site)
 
 ## Wishlist
 
