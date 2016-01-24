@@ -62,8 +62,48 @@ func (e *Extractor) links(u *url.URL, doc *goquery.Document) ([]*url.URL, error)
 	return urls, nil
 }
 
-func (e *Extractor) proccess(ctx *context, u *url.URL, body string, hash string, doc *goquery.Document) Worker {
+func (e *Extractor) crawl(ctx *context, u *url.URL, depth int) Worker {
+	if !ctx.Queue(u) || depth > 5 {
+		return nil
+	}
+
 	return Worker(func(wp *WorkerPool) {
+		e.log.Infof("Requesting %s", u)
+
+		res, err := http.Get(u.String())
+		defer res.Body.Close()
+		if err != nil {
+			e.log.WithError(err).Errorf("Error requesting `%s`", u)
+			return
+		}
+
+		_, hash := e.getBody(res)
+		e.log.Infof("Page %s has hash %s", u, hash)
+
+		doc, err := goquery.NewDocumentFromResponse(res)
+		if err != nil {
+			e.log.WithError(err).Errorf("Error proccessing URL %s", u)
+			return
+		}
+
+		a, _ := e.repo.GetArticle(u.String())
+		if a != nil && (a.MD5 == hash || a.Flag == Ignore) {
+			return
+		}
+
+		links, err := e.links(res.Request.URL, doc)
+
+		if err != nil {
+			e.log.WithError(err).Errorf("Error parsing document `%s`", u)
+			return
+		}
+
+		for _, link := range links {
+			if link.Host == ctx.URL().Host {
+				wp.Do(e.crawl(ctx, link, depth+1))
+			}
+		}
+
 		e.log.Infof("Proccessing %s", u)
 
 		title := doc.Find("head>title").First().Text()
@@ -85,52 +125,6 @@ func (e *Extractor) proccess(ctx *context, u *url.URL, body string, hash string,
 		if err != nil {
 			e.log.WithError(err).Errorf("Error storing article %s", article.URL)
 			return
-		}
-	})
-}
-
-func (e *Extractor) crawl(ctx *context, u *url.URL, depth int) Worker {
-	if !ctx.Queue(u) || depth > 5 {
-		return nil
-	}
-
-	return Worker(func(wp *WorkerPool) {
-		e.log.Infof("Requesting %s", u)
-
-		res, err := http.Get(u.String())
-		defer res.Body.Close()
-		if err != nil {
-			e.log.WithError(err).Errorf("Error requesting `%s`", u)
-			return
-		}
-
-		body, hash := e.getBody(res)
-		e.log.Infof("Page %s has hash %s", u, hash)
-
-		doc, err := goquery.NewDocumentFromResponse(res)
-		if err != nil {
-			e.log.WithError(err).Errorf("Error proccessing URL %s", u)
-			return
-		}
-
-		a, _ := e.repo.GetArticle(u.String())
-		if a != nil && (a.MD5 == hash || a.Flag == Ignore) {
-			return
-		}
-
-		wp.Do(e.proccess(ctx, u, body, hash, doc))
-
-		links, err := e.links(res.Request.URL, doc)
-
-		if err != nil {
-			e.log.WithError(err).Errorf("Error parsing document `%s`", u)
-			return
-		}
-
-		for _, link := range links {
-			if link.Host == ctx.URL().Host {
-				wp.Do(e.crawl(ctx, link, depth+1))
-			}
 		}
 	})
 }
