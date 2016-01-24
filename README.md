@@ -6,7 +6,7 @@ Blogalert crawls blog sites and alerts you when a subscription has new content
 
 It is devided into a crawler, an api and a frontend. All of these can be hosted seperatly as long as they share a database.
 
-# TODO
+## TODO
 
 * Unsubscribe (in progess)
 * URL autocomplete
