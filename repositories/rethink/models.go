@@ -28,6 +28,7 @@ type subscription struct {
 }
 
 type articleRead struct {
+	ID         string `gorethink:"id"`
 	UID        string `gorethink:"uid"`
 	BlogURL    string `gorethink:"blog"`
 	ArticleURL string `gorethink:"article"`
@@ -61,6 +62,7 @@ func newSubscription(uid string, b *blogalert.Blog) *subscription {
 
 func newArticleRead(uid string, a *blogalert.Article) *articleRead {
 	return &articleRead{
+		ID:         fmt.Sprintf("%s_%s", uid, a.URL.String()),
 		UID:        uid,
 		ArticleURL: a.URL.String(),
 		BlogURL:    a.Blog.URL.String(),
