@@ -6,7 +6,7 @@ var Template;
 
 function onLoad() {
     gapi.auth2.getAuthInstance().then(function(){
-        onLoginChange(false)
+        onLoginChange(gapi.auth2.getAuthInstance().isSignedIn.get())
         gapi.auth2.getAuthInstance().isSignedIn.listen(onLoginChange)
     })
 
