@@ -40,6 +40,7 @@ func NewRepoFromSession(sess *gorethink.Session) blogalert.Repository {
 	gorethink.DB(Database).Table(ArticleTable).IndexCreate("ts")
 	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("uid")
 	gorethink.DB(Database).Table(SubscriptionTable).IndexCreate("blog")
+	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("ts")
 	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("uid")
 	gorethink.DB(Database).Table(ArticleReadTable).IndexCreate("blog")
 
@@ -240,6 +241,7 @@ func (r *repo) GetUserArticlesRead(UID string, blog *blogalert.Blog) ([]*blogale
 	cursor, err := gorethink.DB(Database).Table(ArticleReadTable).
 		Filter(gorethink.Row.Field("uid").Eq(UID)).
 		Filter(gorethink.Row.Field("blog").Eq(blog.URL.String())).
+		OrderBy(gorethink.OrderByOpts{Index: gorethink.Desc("ts")}).
 		Run(r.session)
 	if err != nil {
 		return nil, err
