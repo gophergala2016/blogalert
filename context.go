@@ -27,6 +27,10 @@ func (ctx *context) Queue(u *url.URL) bool {
 		return false
 	}
 
+	if len(ctx.dup) > 300 {
+		return false
+	}
+
 	ctx.dup[u.String()] = struct{}{}
 	return true
 }
